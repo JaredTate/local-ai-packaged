@@ -80,6 +80,14 @@ services:
     volumes:
       - ./n8n/backup:/backup  
 
+services:
+  tika:
+    image: apache/tika:latest-full
+    container_name: tika
+    ports:
+      - "9998:9998"
+    restart: unless-stopped
+
   n8n:
     <<: *service-n8n
     container_name: n8n
