@@ -80,7 +80,6 @@ services:
     volumes:
       - ./n8n/backup:/backup  
 
-services:
   tika:
     image: apache/tika:latest-full
     container_name: tika
