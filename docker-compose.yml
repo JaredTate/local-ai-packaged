@@ -4,11 +4,11 @@ include:
 volumes:
   n8n_storage:
   # ollama_storage:
-  qdrant_storage:
+  # qdrant_storage:
   open-webui:
-  flowise:
-  caddy-data:
-  caddy-config:
+  # flowise:
+  # caddy-data:
+  # caddy-config:
   valkey-data:
   langfuse_postgres_data:
   langfuse_clickhouse_data:
@@ -31,21 +31,65 @@ x-n8n: &service-n8n
     - WEBHOOK_URL=${N8N_HOSTNAME:+https://}${N8N_HOSTNAME:-http://localhost:5678}
 
 services:
-  flowise:
-    image: flowiseai/flowise
-    restart: unless-stopped
-    container_name: flowise
-    environment:
-      - PORT=3001
-      - FLOWISE_USERNAME=${FLOWISE_USERNAME}
-      - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
-    ports:
-      - 3001:3001
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - ~/.flowise:/root/.flowise
-    entrypoint: /bin/sh -c "sleep 3; flowise start"
+#  flowise:
+#    image: flowiseai/flowise
+#    restart: unless-stopped
+#    container_name: flowise
+#    environment:
+#      - PORT=3001
+#      - FLOWISE_USERNAME=${FLOWISE_USERNAME}
+#      - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
+#    ports:
+#      - 3001:3001
+#    extra_hosts:
+#      - "host.docker.internal:host-gateway"
+#    volumes:
+#      - ~/.flowise:/root/.flowise
+#    entrypoint: /bin/sh -c "sleep 3; flowise start"
+#
+#  tika:
+#    image: apache/tika:latest-full
+#    container_name: tika
+#    ports:
+#      - "9998:9998"
+#    restart: unless-stopped
+#
+#  qdrant:
+#    image: qdrant/qdrant
+#    container_name: qdrant
+#    restart: unless-stopped
+#    ports:
+#      - 6333:6333
+#    volumes:
+#      - qdrant_storage:/qdrant/storage
+#
+#  caddy:
+#    container_name: caddy
+#    image: docker.io/library/caddy:2-alpine
+#    network_mode: host
+#    restart: unless-stopped
+#    volumes:
+#      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+#      - caddy-data:/data:rw
+#      - caddy-config:/config:rw
+#    environment:
+#      - N8N_HOSTNAME=${N8N_HOSTNAME:-":8001"}
+#      - WEBUI_HOSTNAME=${WEBUI_HOSTNAME:-":8002"}
+#      - FLOWISE_HOSTNAME=${FLOWISE_HOSTNAME:-":8003"}
+#      - OLLAMA_HOSTNAME=${OLLAMA_HOSTNAME:-":8004"}
+#      - SUPABASE_HOSTNAME=${SUPABASE_HOSTNAME:-":8005"}
+#      - SEARXNG_HOSTNAME=${SEARXNG_HOSTNAME:-":8006"}
+#      - LANGFUSE_HOSTNAME=${LANGFUSE_HOSTNAME:-":8007"}
+#      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-internal}
+#    cap_drop:
+#      - ALL
+#    cap_add:
+#      - NET_BIND_SERVICE
+#    logging:
+#      driver: "json-file"
+#      options:
+#        max-size: "1m"
+#        max-file: "1"
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
@@ -68,13 +112,6 @@ services:
     volumes:
       - ./n8n/backup:/backup
 
-  tika:
-    image: apache/tika:latest-full
-    container_name: tika
-    ports:
-      - "9998:9998"
-    restart: unless-stopped
-
   n8n:
     <<: *service-n8n
     container_name: n8n
@@ -88,43 +125,6 @@ services:
     depends_on:
       n8n-import:
         condition: service_completed_successfully
-
-  qdrant:
-    image: qdrant/qdrant
-    container_name: qdrant
-    restart: unless-stopped
-    ports:
-      - 6333:6333
-    volumes:
-      - qdrant_storage:/qdrant/storage
-
-  caddy:
-    container_name: caddy
-    image: docker.io/library/caddy:2-alpine
-    network_mode: host
-    restart: unless-stopped
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy-data:/data:rw
-      - caddy-config:/config:rw
-    environment:
-      - N8N_HOSTNAME=${N8N_HOSTNAME:-":8001"}
-      - WEBUI_HOSTNAME=${WEBUI_HOSTNAME:-":8002"}
-      - FLOWISE_HOSTNAME=${FLOWISE_HOSTNAME:-":8003"}
-      - OLLAMA_HOSTNAME=${OLLAMA_HOSTNAME:-":8004"}
-      - SUPABASE_HOSTNAME=${SUPABASE_HOSTNAME:-":8005"}
-      - SEARXNG_HOSTNAME=${SEARXNG_HOSTNAME:-":8006"}
-      - LANGFUSE_HOSTNAME=${LANGFUSE_HOSTNAME:-":8007"}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-internal}
-    cap_drop:
-      - ALL
-    cap_add:
-      - NET_BIND_SERVICE
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1m"
-        max-file: "1"
 
   langfuse-worker:
     image: langfuse/langfuse-worker:3
