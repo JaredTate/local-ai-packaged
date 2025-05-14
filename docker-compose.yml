@@ -4,7 +4,7 @@ include:
 volumes:
   n8n_storage:
   # ollama_storage:
-  # qdrant_storage:
+  qdrant_storage:
   open-webui:
   # flowise:
   # caddy-data:
@@ -54,14 +54,14 @@ services:
 #      - "9998:9998"
 #    restart: unless-stopped
 #
-#  qdrant:
-#    image: qdrant/qdrant
-#    container_name: qdrant
-#    restart: unless-stopped
-#    ports:
-#      - 6333:6333
-#    volumes:
-#      - qdrant_storage:/qdrant/storage
+  qdrant:
+    image: qdrant/qdrant
+    container_name: qdrant
+    restart: unless-stopped
+    ports:
+      - 6333:6333
+    volumes:
+      - qdrant_storage:/qdrant/storage
 #
 #  caddy:
 #    container_name: caddy
