@@ -318,7 +318,7 @@ services:
       - "11235:11235"
     shm_size: '1g'
     env_file:
-      - .llm.env
+      - .env
     volumes:
       - /dev/shm:/dev/shm
 
