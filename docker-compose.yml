@@ -310,6 +310,18 @@ services:
         max-size: "1m"
         max-file: "1"
 
+  crawl4ai:
+    image: unclecode/crawl4ai:latest
+    container_name: crawl4ai
+    restart: unless-stopped
+    ports:
+      - "11235:11235"
+    shm_size: '1g'
+    env_file:
+      - .llm.env
+    volumes:
+      - /dev/shm:/dev/shm
+
   redis-server:
     image: redis:latest
     container_name: redis-server
