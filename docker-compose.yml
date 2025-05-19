@@ -316,6 +316,8 @@ services:
     restart: unless-stopped
     ports:
       - "11235:11235"
+    environment:
+      - CRAWL4AI_API_TOKEN=${CRAWL4AI_API_TOKEN:-}
     shm_size: '1g'
     env_file:
       - .env
