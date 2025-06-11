@@ -102,6 +102,20 @@ services:
     volumes:
       - open-webui:/app/backend/data
 
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    container_name: gotenberg
+    restart: unless-stopped
+    ports:
+      - "3003:3000"
+    command:
+      - "gotenberg"
+      - "--api-timeout=10m"
+      - "--api-root-path=/"
+      - "--log-level=info"
+      - "--log-format=auto"
+      - "--pdfengines-engines=pdftk,libreoffice-pdfengine,pdfcpu"
+
   n8n-import:
     <<: *service-n8n
     container_name: n8n-import
