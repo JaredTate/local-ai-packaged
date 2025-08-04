@@ -4,9 +4,11 @@
 quickly bootstraps a fully featured Local AI and Low Code development
 environment including Ollama for your local LLMs, Open WebUI for an interface to chat with your N8N agents, and Supabase for your database, vector store, and authentication. 
 
-This is Cole's version with a couple of improvements and the addition of Supabase, Open WebUI, Flowise, Langfuse, SearXNG, and Caddy!
+This is Cole's version with a couple of improvements and the addition of Supabase, Open WebUI, Flowise, Neo4j, Langfuse, SearXNG, and Caddy!
 Also, the local RAG AI Agent workflows from the video will be automatically in your 
 n8n instance if you use this setup instead of the base one provided by n8n!
+
+**IMPORANT**: Supabase has updated a couple environment variables so you may have to add some new default values in your .env that I have in my .env.example if you have had this project up and running already and are just pulling new changes. Specifically, you need to add "POOLER_DB_POOL_SIZE=5" to your .env. This is required if you have had the package running before June 14th.
 
 ## Important Links
 
@@ -45,6 +47,8 @@ builder that pairs very well with n8n
 store with an comprehensive API. Even though you can use Supabase for RAG, this was
 kept unlike Postgres since it's faster than Supabase so sometimes is the better option.
 
+✅ [**Neo4j**](https://neo4j.com/) - Knowledge graph engine that powers tools like GraphRAG, LightRAG, and Graphiti 
+
 ✅ [**SearXNG**](https://searxng.org/) - Open source, free internet metasearch engine which aggregates 
 results from up to 229 search services. Users are neither tracked nor profiled, hence the fit with the local AI package.
 
@@ -64,7 +68,7 @@ Before you begin, make sure you have the following software installed:
 
 Clone the repository and navigate to the project directory:
 ```bash
-git clone https://github.com/coleam00/local-ai-packaged.git
+git clone -b stable https://github.com/coleam00/local-ai-packaged.git
 cd local-ai-packaged
 ```
 
@@ -89,6 +93,11 @@ Before running the services, you need to set up your environment variables for S
    DASHBOARD_USERNAME=
    DASHBOARD_PASSWORD=
    POOLER_TENANT_ID=
+
+   ############
+   # Neo4j Secrets
+   ############   
+   NEO4J_AUTH=
 
    ############
    # Langfuse credentials
@@ -116,6 +125,7 @@ Before running the services, you need to set up your environment variables for S
    SUPABASE_HOSTNAME=:supabase.yourdomain.com
    OLLAMA_HOSTNAME=:ollama.yourdomain.com
    SEARXNG_HOSTNAME=searxng.yourdomain.com
+   NEO4J_HOSTNAME=neo4j.yourdomain.com
    LETSENCRYPT_EMAIL=your-email-address
    ```   
 
@@ -179,6 +189,20 @@ Additionally, after you see "Editor is now accessible via: http://localhost:5678
 python start_services.py --profile cpu
 ```
 
+### The environment argument
+The **start-services.py** script offers the possibility to pass one of two options for the environment argument, **private** (default environment) and **public**:
+- **private:** you are deploying the stack in a safe environment, hence a lot of ports can be made accessible without having to worry about security
+- **public:** the stack is deployed in a public environment, which means the attack surface should be made as small as possible. All ports except for 80 and 443 are closed
+
+The stack initialized with
+```bash
+   python start_services.py --profile gpu-nvidia --environment private
+   ```
+equals the one initialized with
+```bash
+   python start_services.py --profile gpu-nvidia
+   ```
+
 ## Deploying to the Cloud
 
 ### Prerequisites for the below steps
@@ -191,16 +215,33 @@ Before running the above commands to pull the repo and install everything:
 
 1. Run the commands as root to open up the necessary ports:
    - ufw enable
-   - ufw allow 8000 && ufw allow 3000 && ufw allow 5678 && ufw allow 3002 && ufw allow 80 && ufw allow 443
-   - ufw allow 3001 (if you want to expose Flowise, you will have to set up the [environment variables](https://docs.flowiseai.com/configuration/environment-variables) to enable authentication)
-   - ufw allow 8080 (if you want to expose SearXNG)
-   - ufw allow 11434 (if you want to expose Ollama)
+   - ufw allow 80 && ufw allow 443
    - ufw reload
+   ---
+   **WARNING**
 
-2. Set up A records for your DNS provider to point your subdomains you'll set up in the .env file for Caddy
+   ufw does not shield ports published by docker, because the iptables rules configured by docker are analyzed before those configured by ufw. There is a solution to change this behavior, but that is out of scope for this project. Just make sure that all traffic runs through the caddy service via port 443. Port 80 should only be used to redirect to port 443.
+
+   ---
+2. Run the **start-services.py** script with the environment argument **public** to indicate you are going to run the package in a public environment. The script will make sure that all ports, except for 80 and 443, are closed down, e.g.
+
+```bash
+   python3 start_services.py --profile gpu-nvidia --environment public
+   ```
+
+3. Set up A records for your DNS provider to point your subdomains you'll set up in the .env file for Caddy
 to the IP address of your cloud instance.
 
    For example, A record to point n8n to [cloud instance IP] for n8n.yourdomain.com
+
+
+**NOTE**: If you are using a cloud machine without the "docker compose" command available by default, such as a Ubuntu GPU instance on DigitalOcean, run these commands before running start_services.py:
+
+- DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\\" -f4)
+- sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+- sudo chmod +x /usr/local/bin/docker-compose
+- sudo mkdir -p /usr/local/lib/docker/cli-plugins
+- sudo ln -s /usr/local/bin/docker-compose /usr/local/lib/docker/cli-plugins/docker-compose
 
 ## ⚡️ Quick start and usage
 
@@ -292,6 +333,10 @@ Here are solutions to common issues you might encounter:
 - **If using Docker Desktop**: Go into the Docker settings and make sure "Expose daemon on tcp://localhost:2375 without TLS" is turned on
 
 - **Supabase Service Unavailable** - Make sure you don't have an "@" character in your Postgres password! If the connection to the kong container is working (the container logs say it is receiving requests from n8n) but n8n says it cannot connect, this is generally the problem from what the community has shared. Other characters might not be allowed too, the @ symbol is just the one I know for sure!
+
+- **SearXNG Restarting**: If the SearXNG container keeps restarting, run the command "chmod 755 searxng" within the local-ai-packaged folder so SearXNG has the permissions it needs to create the uwsgi.ini file.
+
+- **Files not Found in Supabase Folder** - If you get any errors around files missing in the supabase/ folder like .env, docker/docker-compose.yml, etc. this most likely means you had a "bad" pull of the Supabase GitHub repository when you ran the start_services.py script. Delete the supabase/ folder within the Local AI Package folder entirely and try again.
 
 ### GPU Support Issues
 
