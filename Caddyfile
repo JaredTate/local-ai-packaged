@@ -38,6 +38,13 @@
 # Neo4j Browser
 {$NEO4J_HOSTNAME} {
     reverse_proxy neo4j:7474
+    
+    # WebSocket support for Neo4j bolt protocol
+    @websockets {
+        header Connection *Upgrade*
+        header Upgrade websocket
+    }
+    reverse_proxy @websockets neo4j:7687
 }
 
 # Neo4j Bolt Protocol (if using a subdomain like bolt.neo4j.jaredtate.com)
