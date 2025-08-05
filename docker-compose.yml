@@ -133,6 +133,23 @@ services:
     depends_on:
       - memgraph
 
+  memgraph-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.memgraph-api
+    container_name: memgraph-api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    expose:
+      - 5000/tcp
+    environment:
+      - MEMGRAPH_URI=bolt://memgraph:7687
+      - MEMGRAPH_USER=${MEMGRAPH_USER:-memgraph}
+      - MEMGRAPH_PASSWORD=${MEMGRAPH_PASSWORD:-memgraph}
+    depends_on:
+      - memgraph
+
   caddy:
     container_name: caddy
     image: docker.io/library/caddy:2-alpine
@@ -159,6 +176,7 @@ services:
       - SEARXNG_HOSTNAME=${SEARXNG_HOSTNAME:-":8006"}
       - LANGFUSE_HOSTNAME=${LANGFUSE_HOSTNAME:-":8007"}
       - NEO4J_HOSTNAME=${NEO4J_HOSTNAME:-":8008"}
+      - MEMAPI_HOSTNAME=${MEMAPI_HOSTNAME:-":8009"}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-internal}
     cap_drop:
       - ALL

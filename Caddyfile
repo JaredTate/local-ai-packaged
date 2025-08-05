@@ -40,6 +40,11 @@
     reverse_proxy neo4j:7474
 }
 
+# Memgraph API
+{$MEMAPI_HOSTNAME} {
+    reverse_proxy memgraph-api:5000
+}
+
 import /etc/caddy/addons/*.conf
 
 # # SearXNG
