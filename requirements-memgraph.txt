@@ -1,0 +1,4 @@
+# Memgraph Python client dependencies
+neo4j==5.14.0          # Neo4j driver (works with Memgraph)
+gqlalchemy==1.4.1      # Memgraph's official Python OGM
+python-dotenv==1.0.0   # For environment variables

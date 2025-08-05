@@ -133,6 +133,23 @@ services:
     depends_on:
       - memgraph
 
+  memgraph-api:
+    image: python:3.11-slim
+    container_name: memgraph-api
+    restart: unless-stopped
+    ports:
+      - "5001:5000"
+    environment:
+      - MEMGRAPH_USER=${MEMGRAPH_USER:-memgraph}
+      - MEMGRAPH_PASSWORD=${MEMGRAPH_PASSWORD:-memgraph}
+    volumes:
+      - ./memgraph-api-proxy.py:/app/app.py:ro
+      - ./requirements-memgraph.txt:/app/requirements.txt:ro
+    working_dir: /app
+    command: sh -c "pip install -r requirements.txt flask && python app.py"
+    depends_on:
+      - memgraph
+
   caddy:
     container_name: caddy
     image: docker.io/library/caddy:2-alpine
