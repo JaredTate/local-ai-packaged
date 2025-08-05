@@ -103,6 +103,36 @@ services:
         - NEO4J_AUTH=${NEO4J_AUTH:-"neo4j/your_password"}
     restart: always
 
+  memgraph:
+    image: memgraph/memgraph-mage
+    container_name: memgraph
+    restart: unless-stopped
+    ports:
+      - "7688:7687"
+      - "7445:7444"
+    expose:
+      - 7687/tcp
+      - 7444/tcp
+    environment:
+      - MEMGRAPH_USER=${MEMGRAPH_USER:-memgraph}
+      - MEMGRAPH_PASSWORD=${MEMGRAPH_PASSWORD:-memgraph}
+    volumes:
+      - ./memgraph/data:/var/lib/memgraph
+      - ./memgraph/logs:/var/log/memgraph
+    
+  memgraph-lab:
+    image: memgraph/lab
+    container_name: memgraph-lab
+    restart: unless-stopped
+    ports:
+      - "3003:3000"
+    expose:
+      - 3000/tcp
+    environment:
+      - QUICK_CONNECT_MG_HOST=memgraph
+    depends_on:
+      - memgraph
+
   caddy:
     container_name: caddy
     image: docker.io/library/caddy:2-alpine
