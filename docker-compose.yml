@@ -88,13 +88,13 @@ services:
       - qdrant_storage:/qdrant/storage
 
   memgraph:
-    image: memgraph/memgraph-mage
+    image: memgraph/memgraph-mage:latest
     container_name: memgraph
     hostname: memgraph
     restart: unless-stopped
     ports:
-      - "7688:7687"
-      - "7445:7444"
+      - "7688:7687"  # Bolt protocol for client connections
+      - "7445:7444"  # WebSocket for log streaming to Memgraph Lab
     expose:
       - 7687/tcp
       - 7444/tcp
@@ -104,6 +104,7 @@ services:
     volumes:
       - ./memgraph/data:/var/lib/memgraph
       - ./memgraph/logs:/var/log/memgraph
+      - ./memgraph/etc:/etc/memgraph  # Added for custom configurations
     healthcheck:
       test: ["CMD", "echo", "RETURN 1;"]
       interval: 10s
@@ -112,7 +113,7 @@ services:
       start_period: 30s
     
   memgraph-lab:
-    image: memgraph/lab
+    image: memgraph/lab:latest
     container_name: memgraph-lab
     restart: unless-stopped
     ports:
@@ -121,6 +122,7 @@ services:
       - 3000/tcp
     environment:
       - QUICK_CONNECT_MG_HOST=memgraph
+      - QUICK_CONNECT_MG_PORT=7687
     depends_on:
       - memgraph
 
