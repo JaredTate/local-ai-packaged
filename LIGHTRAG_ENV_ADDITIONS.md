@@ -1,0 +1,37 @@
+# Add these to your .env file
+
+```bash
+# Memgraph Configuration
+MEMGRAPH_URI=bolt://memgraph:7687
+MEMGRAPH_USERNAME=memgraph
+MEMGRAPH_PASSWORD=memgraph
+MEMGRAPH_DATABASE=memgraph
+
+# LightRAG LLM Configuration
+LIGHTRAG_LLM_BINDING=openai
+LIGHTRAG_LLM_MODEL=gpt-4o-mini
+LIGHTRAG_LLM_BINDING_HOST=https://api.openai.com/v1
+LIGHTRAG_LLM_API_KEY=YOUR_OPENAI_API_KEY_HERE
+
+# LightRAG Embedding Configuration
+LIGHTRAG_EMBEDDING_BINDING=openai
+LIGHTRAG_EMBEDDING_MODEL=text-embedding-3-small
+LIGHTRAG_EMBEDDING_DIM=1536
+LIGHTRAG_EMBEDDING_BINDING_HOST=https://api.openai.com
+LIGHTRAG_EMBEDDING_API_KEY=YOUR_OPENAI_API_KEY_HERE
+
+# LightRAG Authentication
+AUTH_ACCOUNTS='admin:YOUR_PASSWORD_HERE'
+LIGHTRAG_API_KEY=YOUR_API_KEY_HERE
+TOKEN_SECRET=YOUR_SECRET_HERE
+TOKEN_EXPIRE_HOURS=48
+GUEST_TOKEN_EXPIRE_HOURS=24
+JWT_ALGORITHM=HS256
+WHITELIST_PATHS=/health,/api/health
+```
+
+Replace:
+- YOUR_OPENAI_API_KEY_HERE with your OpenAI API key
+- YOUR_PASSWORD_HERE with a secure password
+- YOUR_API_KEY_HERE with a generated API key
+- YOUR_SECRET_HERE with a generated secret
