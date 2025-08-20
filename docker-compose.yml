@@ -15,10 +15,6 @@ volumes:
   langfuse_clickhouse_logs:
   langfuse_minio_data:
 
-networks:
-  default:
-    driver: bridge
-
 x-n8n: &service-n8n
   image: n8nio/n8n:latest
   environment:
@@ -125,8 +121,6 @@ services:
     volumes:
       - ./memgraph/data:/var/lib/memgraph
       - ./memgraph/logs:/var/log/memgraph
-    networks:
-      - default
     healthcheck:
       test: ["CMD", "sh", "-c", "echo 'RETURN 1;' | cypher-shell -u ${MEMGRAPH_USER:-memgraph} -p ${MEMGRAPH_PASSWORD:-memgraph}"]
       interval: 10s
@@ -461,8 +455,6 @@ services:
     image: ghcr.io/hkuds/lightrag:latest
     ports:
       - "9621:9621"
-    networks:
-      - default
     volumes:
       - ./lightrag/data/rag_storage:/app/data/rag_storage
       - ./lightrag/data/inputs:/app/data/inputs
