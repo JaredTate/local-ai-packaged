@@ -40,6 +40,11 @@
     reverse_proxy neo4j:7474
 }
 
+# LightRAG
+{$LIGHTRAG_HOSTNAME} {
+    reverse_proxy lightrag:9621
+}
+
 import /etc/caddy/addons/*.conf
 
 # # SearXNG

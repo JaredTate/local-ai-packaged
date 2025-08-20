@@ -176,6 +176,7 @@ services:
       - SEARXNG_HOSTNAME=${SEARXNG_HOSTNAME:-":8006"}
       - LANGFUSE_HOSTNAME=${LANGFUSE_HOSTNAME:-":8007"}
       - NEO4J_HOSTNAME=${NEO4J_HOSTNAME:-":8008"}
+      - LIGHTRAG_HOSTNAME=${LIGHTRAG_HOSTNAME:-":8009"}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-internal}
     cap_drop:
       - ALL
@@ -440,3 +441,56 @@ services:
       - .env
     volumes:
       - /dev/shm:/dev/shm
+
+  lightrag:
+    container_name: lightrag
+    image: ghcr.io/hkuds/lightrag:latest
+    ports:
+      - "9621:9621"
+    volumes:
+      - ./lightrag/data/rag_storage:/app/data/rag_storage
+      - ./lightrag/data/inputs:/app/data/inputs
+      - ./lightrag/data/tiktoken:/app/data/tiktoken
+      - ./lightrag/config.ini:/app/config.ini
+      - ./.env:/app/.env
+    env_file:
+      - .env
+    environment:
+      - TIKTOKEN_CACHE_DIR=/app/data/tiktoken
+      - HOST=0.0.0.0
+      - PORT=9621
+      - WEBUI_TITLE=LightRAG Knowledge Graph
+      - WEBUI_DESCRIPTION=Simple and Fast Graph Based RAG System
+      # Storage Configuration - Using Memgraph
+      - LIGHTRAG_GRAPH_STORAGE=MemgraphStorage
+      - LIGHTRAG_KV_STORAGE=JsonKVStorage
+      - LIGHTRAG_DOC_STATUS_STORAGE=JsonDocStatusStorage
+      - LIGHTRAG_VECTOR_STORAGE=NanoVectorDBStorage
+      # Memgraph Connection
+      - MEMGRAPH_URI=bolt://memgraph:7687
+      - MEMGRAPH_USERNAME=${MEMGRAPH_USER:-memgraph}
+      - MEMGRAPH_PASSWORD=${MEMGRAPH_PASSWORD:-memgraph}
+      - MEMGRAPH_DATABASE=memgraph
+      # LLM Configuration - You need to configure these
+      - LLM_BINDING=${LIGHTRAG_LLM_BINDING:-openai}
+      - LLM_MODEL=${LIGHTRAG_LLM_MODEL:-gpt-4o}
+      - LLM_BINDING_HOST=${LIGHTRAG_LLM_BINDING_HOST:-https://api.openai.com/v1}
+      - LLM_BINDING_API_KEY=${LIGHTRAG_LLM_API_KEY}
+      # Embedding Configuration - Customize these
+      - EMBEDDING_BINDING=${LIGHTRAG_EMBEDDING_BINDING:-openai}
+      - EMBEDDING_MODEL=${LIGHTRAG_EMBEDDING_MODEL:-text-embedding-3-large}
+      - EMBEDDING_DIM=${LIGHTRAG_EMBEDDING_DIM:-3072}
+      - EMBEDDING_BINDING_HOST=${LIGHTRAG_EMBEDDING_BINDING_HOST:-https://api.openai.com}
+      - EMBEDDING_BINDING_API_KEY=${LIGHTRAG_EMBEDDING_API_KEY}
+      # Processing Configuration
+      - MAX_ASYNC=4
+      - MAX_PARALLEL_INSERT=2
+      - CHUNK_SIZE=1200
+      - CHUNK_OVERLAP_SIZE=100
+      - ENABLE_LLM_CACHE=true
+      - SUMMARY_LANGUAGE=English
+    restart: unless-stopped
+    depends_on:
+      - memgraph
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
