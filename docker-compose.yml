@@ -86,22 +86,6 @@ services:
       - 6334/tcp
     volumes:
       - qdrant_storage:/qdrant/storage
-#
-  neo4j:
-    image: neo4j:5.15.0
-    container_name: neo4j
-    volumes:
-        - ./neo4j/logs:/logs
-        - ./neo4j/config:/config
-        - ./neo4j/data:/data
-        - ./neo4j/plugins:/plugins
-    expose:
-      - 7473/tcp
-      - 7474/tcp
-      - 7687/tcp
-    environment:
-        - NEO4J_AUTH=${NEO4J_AUTH:-"neo4j/your_password"}
-    restart: always
 
   memgraph:
     image: memgraph/memgraph-mage
@@ -182,7 +166,6 @@ services:
       - SUPABASE_HOSTNAME=${SUPABASE_HOSTNAME:-":8005"}
       - SEARXNG_HOSTNAME=${SEARXNG_HOSTNAME:-":8006"}
       - LANGFUSE_HOSTNAME=${LANGFUSE_HOSTNAME:-":8007"}
-      - NEO4J_HOSTNAME=${NEO4J_HOSTNAME:-":8008"}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-internal}
     cap_drop:
       - ALL
@@ -448,59 +431,3 @@ services:
     volumes:
       - /dev/shm:/dev/shm
 
-  lightrag:
-    container_name: lightrag
-    hostname: lightrag
-    image: ghcr.io/hkuds/lightrag:latest
-    ports:
-      - "9621:9621"
-    volumes:
-      - ./lightrag/data/rag_storage:/app/data/rag_storage
-      - ./lightrag/data/inputs:/app/data/inputs
-      - ./lightrag/data/tiktoken:/app/data/tiktoken
-      - ./lightrag/config.ini:/app/config.ini
-      - ./.env:/app/.env
-    env_file:
-      - .env
-    environment:
-      - TIKTOKEN_CACHE_DIR=/app/data/tiktoken
-      - HOST=0.0.0.0
-      - PORT=9621
-      - WEBUI_TITLE=LightRAG Knowledge Graph
-      - WEBUI_DESCRIPTION=Simple and Fast Graph Based RAG System
-      - LIGHTRAG_GRAPH_STORAGE=MemgraphStorage
-      - LIGHTRAG_KV_STORAGE=JsonKVStorage
-      - LIGHTRAG_DOC_STATUS_STORAGE=JsonDocStatusStorage
-      - LIGHTRAG_VECTOR_STORAGE=NanoVectorDBStorage
-      - MEMGRAPH_URI=${MEMGRAPH_URI}
-      - MEMGRAPH_USERNAME=${MEMGRAPH_USERNAME}
-      - MEMGRAPH_PASSWORD=${MEMGRAPH_PASSWORD}
-      - MEMGRAPH_DATABASE=${MEMGRAPH_DATABASE}
-      - LLM_BINDING=${LIGHTRAG_LLM_BINDING}
-      - LLM_MODEL=${LIGHTRAG_LLM_MODEL}
-      - LLM_BINDING_HOST=${LIGHTRAG_LLM_BINDING_HOST}
-      - LLM_BINDING_API_KEY=${LIGHTRAG_LLM_API_KEY}
-      - EMBEDDING_BINDING=${LIGHTRAG_EMBEDDING_BINDING:-openai}
-      - EMBEDDING_MODEL=${LIGHTRAG_EMBEDDING_MODEL:-text-embedding-3-large}
-      - EMBEDDING_DIM=${LIGHTRAG_EMBEDDING_DIM:-3072}
-      - EMBEDDING_BINDING_HOST=${LIGHTRAG_EMBEDDING_BINDING_HOST:-https://api.openai.com}
-      - EMBEDDING_BINDING_API_KEY=${LIGHTRAG_EMBEDDING_API_KEY}
-      - MAX_ASYNC=4
-      - MAX_PARALLEL_INSERT=2
-      - CHUNK_SIZE=1200
-      - CHUNK_OVERLAP_SIZE=100
-      - ENABLE_LLM_CACHE=true
-      - SUMMARY_LANGUAGE=English
-      - AUTH_ACCOUNTS=${AUTH_ACCOUNTS}
-      - LIGHTRAG_API_KEY=${LIGHTRAG_API_KEY}
-      - TOKEN_SECRET=${TOKEN_SECRET}
-      - TOKEN_EXPIRE_HOURS=${TOKEN_EXPIRE_HOURS:-48}
-      - GUEST_TOKEN_EXPIRE_HOURS=${GUEST_TOKEN_EXPIRE_HOURS:-24}
-      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
-      - WHITELIST_PATHS=${WHITELIST_PATHS:-/health,/api/health}
-    restart: unless-stopped
-    depends_on:
-      memgraph:
-        condition: service_started
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
