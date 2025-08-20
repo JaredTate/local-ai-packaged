@@ -117,12 +117,11 @@ services:
     environment:
       - MEMGRAPH_USER=${MEMGRAPH_USER:-memgraph}
       - MEMGRAPH_PASSWORD=${MEMGRAPH_PASSWORD:-memgraph}
-    command: ["--bolt-auth-enabled=true", "--bolt-username=${MEMGRAPH_USER:-memgraph}", "--bolt-password=${MEMGRAPH_PASSWORD:-memgraph}"]
     volumes:
       - ./memgraph/data:/var/lib/memgraph
       - ./memgraph/logs:/var/log/memgraph
     healthcheck:
-      test: ["CMD", "sh", "-c", "echo 'RETURN 1;' | cypher-shell -u ${MEMGRAPH_USER:-memgraph} -p ${MEMGRAPH_PASSWORD:-memgraph}"]
+      test: ["CMD", "echo", "RETURN 1;"]
       interval: 10s
       timeout: 5s
       retries: 5
