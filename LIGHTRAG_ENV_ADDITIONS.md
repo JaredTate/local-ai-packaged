@@ -1,10 +1,9 @@
 # Add these to your .env file
 
 ```bash
-# Memgraph Configuration
+# Memgraph Configuration (using existing Memgraph credentials)
 MEMGRAPH_URI=bolt://memgraph:7687
 MEMGRAPH_USERNAME=memgraph
-MEMGRAPH_PASSWORD=memgraph
 MEMGRAPH_DATABASE=memgraph
 
 # LightRAG LLM Configuration
