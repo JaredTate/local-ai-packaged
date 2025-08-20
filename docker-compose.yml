@@ -116,6 +116,7 @@ services:
     environment:
       - MEMGRAPH_USER=${MEMGRAPH_USER:-memgraph}
       - MEMGRAPH_PASSWORD=${MEMGRAPH_PASSWORD:-memgraph}
+    command: ["--bolt-auth-enabled=true", "--bolt-username=${MEMGRAPH_USER:-memgraph}", "--bolt-password=${MEMGRAPH_PASSWORD:-memgraph}"]
     volumes:
       - ./memgraph/data:/var/lib/memgraph
       - ./memgraph/logs:/var/log/memgraph
