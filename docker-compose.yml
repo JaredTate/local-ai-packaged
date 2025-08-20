@@ -128,7 +128,7 @@ services:
     networks:
       - default
     healthcheck:
-      test: ["CMD", "echo", "RETURN 1" | "cypher-shell", "-u", "${MEMGRAPH_USER:-memgraph}", "-p", "${MEMGRAPH_PASSWORD:-memgraph}"]
+      test: ["CMD", "sh", "-c", "echo 'RETURN 1;' | cypher-shell -u ${MEMGRAPH_USER:-memgraph} -p ${MEMGRAPH_PASSWORD:-memgraph}"]
       interval: 10s
       timeout: 5s
       retries: 5
