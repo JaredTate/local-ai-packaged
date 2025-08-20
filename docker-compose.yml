@@ -104,7 +104,6 @@ services:
     volumes:
       - ./memgraph/data:/var/lib/memgraph
       - ./memgraph/logs:/var/log/memgraph
-      - ./memgraph/etc:/etc/memgraph  # Added for custom configurations
     healthcheck:
       test: ["CMD", "echo", "RETURN 1;"]
       interval: 10s
@@ -122,7 +121,6 @@ services:
       - 3000/tcp
     environment:
       - QUICK_CONNECT_MG_HOST=memgraph
-      - QUICK_CONNECT_MG_PORT=7687
     depends_on:
       - memgraph
 
