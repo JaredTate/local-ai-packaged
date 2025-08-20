@@ -6,3 +6,6 @@ shared-backup/
 .env.test
 searxng/settings.yml
 searxng/uwsgi*
+/memgraph/data
+/memgraph/logs
+/lightrag/data
