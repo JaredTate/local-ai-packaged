@@ -9,3 +9,4 @@ searxng/uwsgi*
 /memgraph/data
 /memgraph/logs
 /lightrag/data
+supabase/

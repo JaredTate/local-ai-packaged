@@ -15,10 +15,15 @@ import argparse
 import platform
 import sys
 
-def run_command(cmd, cwd=None):
+def run_command(cmd, cwd=None, check=True):
     """Run a shell command and print it."""
     print("Running:", " ".join(cmd))
-    subprocess.run(cmd, cwd=cwd, check=True)
+    result = subprocess.run(cmd, cwd=cwd, check=check, capture_output=True, text=True)
+    if result.returncode != 0 and not check:
+        print(f"Warning: Command returned non-zero exit code {result.returncode}")
+        if result.stderr:
+            print(f"Error output: {result.stderr}")
+    return result
 
 def clone_supabase_repo():
     """Clone the Supabase repository using sparse checkout if not already present."""
@@ -47,12 +52,44 @@ def prepare_supabase_env():
     shutil.copyfile(env_example_path, env_path)
 
 def stop_existing_containers(profile=None):
+    """Stop containers with two-phase approach: gentle first, then force kill."""
     print("Stopping and removing existing containers for the unified project 'localai'...")
+
+    # Phase 1: Try gentle stop with 30 second timeout
     cmd = ["docker", "compose", "-p", "localai"]
     if profile and profile != "none":
         cmd.extend(["--profile", profile])
-    cmd.extend(["-f", "docker-compose.yml", "down"])
-    run_command(cmd)
+    cmd.extend(["-f", "docker-compose.yml", "down", "--timeout", "30"])
+
+    print("Phase 1: Attempting graceful shutdown (30 second timeout)...")
+    result = run_command(cmd, check=False)
+
+    if result.returncode == 0:
+        print("✅ Containers stopped successfully")
+        return
+
+    # Phase 2: Force kill stubborn containers
+    print("⚠️  Some containers failed to stop gracefully, forcing shutdown...")
+    print("Phase 2: Force killing containers (0 second timeout)...")
+
+    cmd_force = ["docker", "compose", "-p", "localai"]
+    if profile and profile != "none":
+        cmd_force.extend(["--profile", profile])
+    cmd_force.extend(["-f", "docker-compose.yml", "down", "--timeout", "0", "--remove-orphans"])
+
+    result_force = run_command(cmd_force, check=False)
+
+    if result_force.returncode != 0:
+        print("⚠️  Warning: Force kill also encountered errors, but continuing...")
+        print("Note: You may need to manually clean up containers with:")
+        print("  docker ps -a | grep localai")
+        print("  docker rm -f <container_id>")
+    else:
+        print("✅ Containers forcefully stopped")
+
+    # Give Docker a moment to clean up
+    print("Waiting 3 seconds for Docker cleanup...")
+    time.sleep(3)
 
 def start_supabase(environment=None):
     """Start the Supabase services (using its compose file)."""
