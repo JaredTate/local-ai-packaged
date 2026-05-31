@@ -10,3 +10,6 @@ searxng/uwsgi*
 /memgraph/logs
 /lightrag/data
 supabase/
+
+# Local backup files (manual / start_services.py)
+*.bak
